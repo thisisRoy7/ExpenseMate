@@ -23,6 +23,7 @@ class ExpenseTracker {
         this.modalExpenses = document.getElementById('modalExpenses');
         this.modalTotal = document.getElementById('modalTotal');
         this.modalBudgetStatus = document.getElementById('modalBudgetStatus');
+        this.expressionPreview = document.getElementById('expressionPreview');
         
         // Budget elements
         this.budgetAmount = document.getElementById('budgetAmount');
@@ -66,6 +67,10 @@ class ExpenseTracker {
         });
         this.setBudgetBtn.addEventListener('click', () => this.setBudget());
         this.applyOffsetBtn.addEventListener('click', () => this.applyOffset());
+        
+        // Expression parsing
+        this.expenseAmountInput.addEventListener('input', () => this.handleExpressionInput());
+        this.expenseAmountInput.addEventListener('blur', () => this.hideExpressionPreview());
         
         // Confirmation modal events
         this.confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteExpense());
@@ -178,6 +183,205 @@ class ExpenseTracker {
             other: '#95a5a6'
         };
         return colors[category] || '#95a5a6';
+    }
+
+    // Fuzzy matching for category names
+    fuzzyMatchCategory(input) {
+        const categories = ['food', 'transport', 'entertainment', 'shopping', 'bills', 'healthcare', 'other'];
+        const aliases = {
+            food: ['food', 'eat', 'meal', 'lunch', 'dinner', 'breakfast', 'snack', 'restaurant', 'cafe', 'grocery', 'groceries'],
+            transport: ['transport', 'travel', 'taxi', 'bus', 'train', 'metro', 'uber', 'ola', 'petrol', 'fuel', 'gas'],
+            entertainment: ['entertainment', 'movie', 'cinema', 'game', 'fun', 'party', 'music', 'concert', 'show'],
+            shopping: ['shopping', 'shop', 'buy', 'purchase', 'cloth', 'clothes', 'dress', 'shirt', 'electronics'],
+            bills: ['bills', 'bill', 'electric', 'electricity', 'water', 'internet', 'phone', 'rent', 'utility'],
+            healthcare: ['healthcare', 'health', 'medical', 'doctor', 'medicine', 'pharmacy', 'hospital', 'clinic'],
+            other: ['other', 'misc', 'miscellaneous', 'random', 'general']
+        };
+
+        const normalizedInput = input.toLowerCase().trim();
+        
+        // Exact match first
+        for (const [category, words] of Object.entries(aliases)) {
+            if (words.includes(normalizedInput)) {
+                return category;
+            }
+        }
+        
+        // Fuzzy match with edit distance
+        let bestMatch = 'other';
+        let bestScore = Infinity;
+        
+        for (const [category, words] of Object.entries(aliases)) {
+            for (const word of words) {
+                const score = this.levenshteinDistance(normalizedInput, word);
+                if (score < bestScore && score <= 2) { // Allow up to 2 character differences
+                    bestScore = score;
+                    bestMatch = category;
+                }
+            }
+        }
+        
+        return bestMatch;
+    }
+
+    // Calculate edit distance between two strings
+    levenshteinDistance(str1, str2) {
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1, // substitution
+                        matrix[i][j - 1] + 1,     // insertion
+                        matrix[i - 1][j] + 1      // deletion
+                    );
+                }
+            }
+        }
+        
+        return matrix[str2.length][str1.length];
+    }
+
+    // Parse expense expressions like "90+40+10" or "90(food)+40(transport)"
+    parseExpenseExpression(expression) {
+        const result = {
+            isValid: false,
+            expenses: [],
+            total: 0,
+            error: null
+        };
+
+        try {
+            // Clean the expression
+            const cleanExpr = expression.trim();
+            if (!cleanExpr) {
+                result.error = 'Please enter an amount or expression';
+                return result;
+            }
+
+            // Check if it's a simple number
+            const simpleNumber = parseFloat(cleanExpr);
+            if (!isNaN(simpleNumber) && isFinite(simpleNumber) && simpleNumber > 0) {
+                result.isValid = true;
+                result.expenses = [{
+                    amount: simpleNumber,
+                    category: this.expenseCategorySelect.value || 'other'
+                }];
+                result.total = simpleNumber;
+                return result;
+            }
+
+            // Parse complex expression with + operator
+            const parts = cleanExpr.split('+').map(part => part.trim());
+            let total = 0;
+
+            for (const part of parts) {
+                if (!part) continue;
+
+                // Check for category in parentheses: 90(food)
+                const categoryMatch = part.match(/^(\d+(?:\.\d+)?)\s*\(\s*([^)]+)\s*\)$/);
+                if (categoryMatch) {
+                    const amount = parseFloat(categoryMatch[1]);
+                    const categoryInput = categoryMatch[2];
+                    
+                    if (isNaN(amount) || amount <= 0) {
+                        result.error = `Invalid amount: ${categoryMatch[1]}`;
+                        return result;
+                    }
+
+                    const category = this.fuzzyMatchCategory(categoryInput);
+                    result.expenses.push({ amount, category, originalCategory: categoryInput });
+                    total += amount;
+                } else {
+                    // Simple number without category
+                    const amount = parseFloat(part);
+                    if (isNaN(amount) || amount <= 0) {
+                        result.error = `Invalid amount: ${part}`;
+                        return result;
+                    }
+
+                    result.expenses.push({ 
+                        amount, 
+                        category: this.expenseCategorySelect.value || 'other'
+                    });
+                    total += amount;
+                }
+            }
+
+            if (result.expenses.length === 0) {
+                result.error = 'No valid expenses found';
+                return result;
+            }
+
+            result.isValid = true;
+            result.total = total;
+            return result;
+
+        } catch (error) {
+            result.error = 'Invalid expression format';
+            return result;
+        }
+    }
+
+    handleExpressionInput() {
+        const expression = this.expenseAmountInput.value;
+        
+        if (!expression.trim()) {
+            this.hideExpressionPreview();
+            return;
+        }
+
+        const parsed = this.parseExpenseExpression(expression);
+        this.showExpressionPreview(parsed);
+    }
+
+    showExpressionPreview(parsed) {
+        if (!parsed.isValid) {
+            this.expressionPreview.className = 'expression-preview visible error';
+            this.expressionPreview.innerHTML = `<strong>Error:</strong> ${parsed.error}`;
+            return;
+        }
+
+        if (parsed.expenses.length === 1) {
+            // Don't show preview for simple single amounts
+            this.hideExpressionPreview();
+            return;
+        }
+
+        this.expressionPreview.className = 'expression-preview visible success';
+        
+        let html = '<strong>Parsed Expenses:</strong><br>';
+        parsed.expenses.forEach(expense => {
+            const categoryDisplay = expense.originalCategory ? 
+                `${expense.category} (${expense.originalCategory})` : 
+                expense.category;
+            html += `
+                <div class="parsed-expense">
+                    <span class="parsed-category">${this.getCategoryEmoji(expense.category)} ${categoryDisplay}</span>
+                    <span class="parsed-amount">₹${expense.amount.toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        html += `<div class="expression-total">Total: ₹${parsed.total.toFixed(2)}</div>`;
+        this.expressionPreview.innerHTML = html;
+    }
+
+    hideExpressionPreview() {
+        setTimeout(() => {
+            this.expressionPreview.className = 'expression-preview';
+        }, 150); // Small delay to allow clicking on preview
     }
 
     getMonthKey(date) {
@@ -323,6 +527,9 @@ class ExpenseTracker {
     handleDateClick(info) {
         // Set the form date to clicked date
         this.expenseDateInput.value = info.dateStr;
+        
+        // Focus on amount input for quick expense entry
+        this.expenseAmountInput.focus();
         
         // Show expenses for this date
         this.showExpenseModal(info.dateStr);
@@ -566,33 +773,44 @@ class ExpenseTracker {
         e.preventDefault();
 
         const date = this.expenseDateInput.value;
-        const amount = parseFloat(this.expenseAmountInput.value);
-        const category = this.expenseCategorySelect.value;
+        const expressionInput = this.expenseAmountInput.value.trim();
         const description = this.expenseDescriptionInput.value.trim();
 
-        if (!date || !amount || !category) {
-            alert('Please fill in all required fields');
+        if (!date || !expressionInput) {
+            alert('Please fill in date and amount fields');
             return;
         }
 
-        if (amount <= 0) {
-            alert('Amount must be greater than 0');
+        // Parse the expression
+        const parsed = this.parseExpenseExpression(expressionInput);
+        
+        if (!parsed.isValid) {
+            alert(`Error: ${parsed.error}`);
             return;
         }
 
-        const expense = {
-            id: Date.now().toString(),
-            amount: amount,
-            category: category,
-            description: description,
-            timestamp: new Date().toISOString()
-        };
+        // Create expense entries
+        const timestamp = new Date().toISOString();
+        let expenseCount = 0;
 
         if (!this.expenses[date]) {
             this.expenses[date] = [];
         }
 
-        this.expenses[date].push(expense);
+        // Add each parsed expense
+        parsed.expenses.forEach((parsedExpense, index) => {
+            const expense = {
+                id: `${Date.now()}-${index}`,
+                amount: parsedExpense.amount,
+                category: parsedExpense.category,
+                description: description || (parsed.expenses.length > 1 ? `Multi-expense entry ${index + 1}` : ''),
+                timestamp: timestamp
+            };
+
+            this.expenses[date].push(expense);
+            expenseCount++;
+        });
+
         this.saveExpenses();
         this.updateBudgetDisplay();
         this.refreshCalendar();
@@ -601,9 +819,13 @@ class ExpenseTracker {
         this.expenseAmountInput.value = '';
         this.expenseCategorySelect.value = '';
         this.expenseDescriptionInput.value = '';
+        this.hideExpressionPreview();
 
         // Show success message
-        this.showSuccessMessage('Expense added successfully!');
+        const message = expenseCount === 1 ? 
+            `Expense added: ₹${parsed.total.toFixed(2)}` : 
+            `${expenseCount} expenses added: ₹${parsed.total.toFixed(2)} total`;
+        this.showSuccessMessage(message);
         
         // Set focus back to amount input for quick entry
         this.expenseAmountInput.focus();
