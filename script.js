@@ -290,7 +290,7 @@ class ExpenseTracker {
                 if (!part) continue;
 
                 // Check for category in parentheses: 90(food)
-                const categoryMatch = part.match(/^(\d+(?:\.\d+)?)\s*\(\s*([^)]+)\s*\)$/);
+                const categoryMatch = part.match(/^(\d+(?:\.\d+)?)\s*\(\s*([^\)]+)\s*\)$/);
                 if (categoryMatch) {
                     const amount = parseFloat(categoryMatch[1]);
                     const categoryInput = categoryMatch[2];
