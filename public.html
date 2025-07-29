@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ExpenseMate</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ExpenseMate</h1>
+
+    <!-- Expense Form -->
+    <form id="expense-form">
+      <input type="text" id="title" placeholder="Expense Title" required>
+      <input type="number" id="amount" placeholder="Amount" required>
+      <input type="date" id="date" required>
+      <button type="submit">Add Expense</button>
+    </form>
+
+    <!-- Expense List -->
+    <ul id="expense-list"></ul>
+
+    <!-- Total -->
+    <div id="total">Total: ₹0</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
