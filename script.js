@@ -855,10 +855,6 @@ class ExpenseTracker {
             `${expenseCount} expenses added: ₹${parsed.total.toFixed(2)} total`;
         this.showSuccessMessage(message);
         
-        // Show warning if there were invalid parts
-        if (parsed.warnings && parsed.warnings.length > 0) {
-            alert('Some entries were skipped: ' + parsed.warnings.join('; '));
-        }
         // Set focus back to amount input for quick entry
         this.expenseAmountInput.focus();
     }
