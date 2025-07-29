@@ -259,7 +259,8 @@ class ExpenseTracker {
             isValid: false,
             expenses: [],
             total: 0,
-            error: null
+            error: null,
+            warnings: [] // Add warnings for invalid parts
         };
 
         try {
@@ -285,19 +286,21 @@ class ExpenseTracker {
             // Parse complex expression with + operator
             const parts = cleanExpr.split('+').map(part => part.trim());
             let total = 0;
+            let hasInvalid = false;
 
             for (const part of parts) {
                 if (!part) continue;
 
                 // Check for category in parentheses: 90(food)
-                const categoryMatch = part.match(/^(\d+(?:\.\d+)?)\s*\(\s*([^)]+)\s*\)$/);
+                const categoryMatch = part.match(/^(\d+(?:\.\d+)?)\s*\(\s*([^\)]+)\s*\)$/);
                 if (categoryMatch) {
                     const amount = parseFloat(categoryMatch[1]);
                     const categoryInput = categoryMatch[2];
-                    
+
                     if (isNaN(amount) || amount <= 0) {
-                        result.error = `Invalid amount: ${categoryMatch[1]}`;
-                        return result;
+                        result.warnings.push(`Invalid amount: ${categoryMatch[1]}`);
+                        hasInvalid = true;
+                        continue;
                     }
 
                     const category = this.fuzzyMatchCategory(categoryInput);
@@ -307,8 +310,9 @@ class ExpenseTracker {
                     // Simple number without category
                     const amount = parseFloat(part);
                     if (isNaN(amount) || amount <= 0) {
-                        result.error = `Invalid amount: ${part}`;
-                        return result;
+                        result.warnings.push(`Invalid amount: ${part}`);
+                        hasInvalid = true;
+                        continue;
                     }
 
                     // For expressions with +, use 'other' if no category selected
@@ -319,12 +323,15 @@ class ExpenseTracker {
             }
 
             if (result.expenses.length === 0) {
-                result.error = 'No valid expenses found';
+                result.error = hasInvalid ? result.warnings.join('; ') : 'No valid expenses found';
                 return result;
             }
 
             result.isValid = true;
             result.total = total;
+            if (hasInvalid) {
+                result.error = result.warnings.join('; ');
+            }
             return result;
 
         } catch (error) {
