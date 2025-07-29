@@ -19,6 +19,21 @@
             </div>
 
             <div class="expense-form-container">
+                <div class="budget-section">
+                    <h3>Monthly Budget</h3>
+                    <div class="budget-display">
+                        <div class="budget-info">
+                            <span class="budget-label">Budget:</span>
+                            <span class="budget-amount" id="budgetAmount">$0</span>
+                        </div>
+                        <div class="budget-info">
+                            <span class="budget-label">Daily Target:</span>
+                            <span class="daily-budget" id="dailyBudget">$0</span>
+                        </div>
+                    </div>
+                    <button type="button" id="manageBudgetBtn" class="manage-budget-btn">Manage Budget</button>
+                </div>
+
                 <h3>Add Expense</h3>
                 <form id="expenseForm">
                     <div class="form-group">
@@ -58,6 +73,62 @@
                 <div id="modalExpenses"></div>
                 <div class="modal-total">
                     <strong>Total: $<span id="modalTotal">0.00</span></strong>
+                </div>
+                <div class="budget-status" id="modalBudgetStatus"></div>
+            </div>
+        </div>
+
+        <div class="budget-modal" id="budgetModal">
+            <div class="modal-content">
+                <span class="close" id="closeBudgetModal">&times;</span>
+                <h3>Manage Monthly Budget</h3>
+                
+                <div class="budget-form-section">
+                    <h4>Set Budget</h4>
+                    <div class="form-group">
+                        <label for="budgetMonth">Month:</label>
+                        <input type="month" id="budgetMonth" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="budgetAmountInput">Budget Amount:</label>
+                        <input type="number" id="budgetAmountInput" step="0.01" min="0" placeholder="3000.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="applyToAllMonths"> Apply this budget to all future months
+                        </label>
+                    </div>
+                    <button type="button" id="setBudgetBtn" class="budget-action-btn">Set Budget</button>
+                </div>
+
+                <div class="budget-form-section">
+                    <h4>Adjust Current Month</h4>
+                    <div class="form-group">
+                        <label for="budgetOffset">Offset Amount:</label>
+                        <input type="number" id="budgetOffset" step="0.01" placeholder="0.00">
+                        <small>Positive to add, negative to subtract from current month's budget</small>
+                    </div>
+                    <button type="button" id="applyOffsetBtn" class="budget-action-btn">Apply Offset</button>
+                </div>
+
+                <div class="budget-summary">
+                    <h4>Current Month Summary</h4>
+                    <div class="summary-item">
+                        <span>Original Budget:</span>
+                        <span id="summaryOriginalBudget">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Total Spent:</span>
+                        <span id="summaryTotalSpent">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Remaining:</span>
+                        <span id="summaryRemaining">$0.00</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Days Left:</span>
+                        <span id="summaryDaysLeft">0</span>
+                    </div>
                 </div>
             </div>
         </div>
