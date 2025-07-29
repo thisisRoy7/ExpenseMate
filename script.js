@@ -40,6 +40,15 @@ class ExpenseTracker {
         this.summaryTotalSpent = document.getElementById('summaryTotalSpent');
         this.summaryRemaining = document.getElementById('summaryRemaining');
         this.summaryDaysLeft = document.getElementById('summaryDaysLeft');
+        
+        // Confirmation modal elements
+        this.confirmationModal = document.getElementById('confirmationModal');
+        this.confirmationMessage = document.getElementById('confirmationMessage');
+        this.confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        this.cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        
+        // Store reference for deletion
+        this.expenseToDelete = null;
     }
 
     bindEvents() {
@@ -58,11 +67,19 @@ class ExpenseTracker {
         this.setBudgetBtn.addEventListener('click', () => this.setBudget());
         this.applyOffsetBtn.addEventListener('click', () => this.applyOffset());
         
+        // Confirmation modal events
+        this.confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteExpense());
+        this.cancelDeleteBtn.addEventListener('click', () => this.closeConfirmationModal());
+        this.confirmationModal.addEventListener('click', (e) => {
+            if (e.target === this.confirmationModal) this.closeConfirmationModal();
+        });
+        
         // Close modals with Escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.closeModal();
                 this.closeBudgetModal();
+                this.closeConfirmationModal();
             }
         });
     }
@@ -343,7 +360,8 @@ class ExpenseTracker {
         this.modalExpenses.innerHTML = expenses.length === 0 
             ? '<p style="text-align: center; color: #6c757d; font-style: italic;">No expenses for this day</p>'
             : expenses.map(expense => `
-                <div class="expense-item">
+                <div class="expense-item" data-expense-id="${expense.id}" data-date="${dateKey}">
+                    <button class="delete-expense-btn" onclick="expenseTracker.showDeleteConfirmation('${dateKey}', '${expense.id}')" title="Delete expense">×</button>
                     <div class="expense-item-header">
                         <span class="expense-category">${this.getCategoryEmoji(expense.category)} ${expense.category}</span>
                         <span class="expense-amount">$${expense.amount.toFixed(2)}</span>
@@ -485,6 +503,65 @@ class ExpenseTracker {
         this.showSuccessMessage(`Budget adjusted by $${offset.toFixed(2)}`);
     }
 
+    showDeleteConfirmation(dateKey, expenseId) {
+        const expense = this.expenses[dateKey]?.find(exp => exp.id === expenseId);
+        
+        if (!expense) {
+            alert('Expense not found');
+            return;
+        }
+
+        this.expenseToDelete = { dateKey, expenseId, expense };
+        
+        this.confirmationMessage.innerHTML = `
+            Are you sure you want to delete this expense?<br>
+            <strong>${this.getCategoryEmoji(expense.category)} ${expense.category}: $${expense.amount.toFixed(2)}</strong>
+            ${expense.description ? `<br><em>"${expense.description}"</em>` : ''}
+        `;
+        
+        this.confirmationModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeConfirmationModal() {
+        this.confirmationModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        this.expenseToDelete = null;
+    }
+
+    confirmDeleteExpense() {
+        if (!this.expenseToDelete) {
+            this.closeConfirmationModal();
+            return;
+        }
+
+        const { dateKey, expenseId, expense } = this.expenseToDelete;
+        
+        // Remove expense from the array
+        this.expenses[dateKey] = this.expenses[dateKey].filter(exp => exp.id !== expenseId);
+        
+        // If no expenses left for this date, remove the date entry
+        if (this.expenses[dateKey].length === 0) {
+            delete this.expenses[dateKey];
+        }
+        
+        // Save updated expenses
+        this.saveExpenses();
+        
+        // Update all displays
+        this.updateBudgetDisplay();
+        this.refreshCalendar();
+        
+        // Update the modal if it's still open
+        this.showExpenseModal(dateKey);
+        
+        // Close confirmation modal
+        this.closeConfirmationModal();
+        
+        // Show success message
+        this.showSuccessMessage(`Expense deleted: ${this.getCategoryEmoji(expense.category)} $${expense.amount.toFixed(2)}`);
+    }
+
     handleExpenseSubmit(e) {
         e.preventDefault();
 
@@ -571,6 +648,7 @@ class ExpenseTracker {
 }
 
 // Initialize the expense tracker when the page loads
+let expenseTracker;
 document.addEventListener('DOMContentLoaded', () => {
-    new ExpenseTracker();
+    expenseTracker = new ExpenseTracker();
 });
