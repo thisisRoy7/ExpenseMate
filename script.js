@@ -295,9 +295,9 @@ class ExpenseTracker {
                     statusIcon = '✅';
                 }
                 
-                let title = `${statusIcon} $${totalAmount.toFixed(2)} (${dayExpenses.length} items)`;
+                let title = `${statusIcon} ₹${totalAmount.toFixed(2)} (${dayExpenses.length} items)`;
                 if (dailyBudget > 0) {
-                    title += ` / $${dailyBudget.toFixed(0)}`;
+                    title += ` / ₹${dailyBudget.toFixed(0)}`;
                 }
                 
                 events.push({
@@ -364,7 +364,7 @@ class ExpenseTracker {
                     <button class="delete-expense-btn" onclick="expenseTracker.showDeleteConfirmation('${dateKey}', '${expense.id}')" title="Delete expense">×</button>
                     <div class="expense-item-header">
                         <span class="expense-category">${this.getCategoryEmoji(expense.category)} ${expense.category}</span>
-                        <span class="expense-amount">$${expense.amount.toFixed(2)}</span>
+                        <span class="expense-amount">₹${expense.amount.toFixed(2)}</span>
                     </div>
                     ${expense.description ? `<div class="expense-description">${expense.description}</div>` : ''}
                 </div>
@@ -376,13 +376,13 @@ class ExpenseTracker {
             let statusClass = '';
             
             if (budgetStatus === 'over-budget') {
-                statusText = `🚨 Over Budget: $${(total - dailyBudget).toFixed(2)} over daily target of $${dailyBudget.toFixed(2)}`;
+                statusText = `🚨 Over Budget: ₹${(total - dailyBudget).toFixed(2)} over daily target of ₹${dailyBudget.toFixed(2)}`;
                 statusClass = 'over-budget';
             } else if (budgetStatus === 'under-budget') {
-                statusText = `✅ Under Budget: $${(dailyBudget - total).toFixed(2)} under daily target of $${dailyBudget.toFixed(2)}`;
+                statusText = `✅ Under Budget: ₹${(dailyBudget - total).toFixed(2)} under daily target of ₹${dailyBudget.toFixed(2)}`;
                 statusClass = 'under-budget';
             } else if (budgetStatus === 'on-budget') {
-                statusText = `⚠️ On Budget: Close to daily target of $${dailyBudget.toFixed(2)}`;
+                statusText = `⚠️ On Budget: Close to daily target of ₹${dailyBudget.toFixed(2)}`;
                 statusClass = 'on-budget';
             }
             
@@ -419,8 +419,8 @@ class ExpenseTracker {
         const monthBudget = this.getCurrentMonthBudget();
         const dailyBudget = this.calculateDynamicDailyBudget();
         
-        this.budgetAmount.textContent = `$${monthBudget.toFixed(0)}`;
-        this.dailyBudget.textContent = `$${dailyBudget.toFixed(0)}`;
+        this.budgetAmount.textContent = `₹${monthBudget.toFixed(0)}`;
+        this.dailyBudget.textContent = `₹${dailyBudget.toFixed(0)}`;
     }
 
     updateBudgetSummary() {
@@ -432,9 +432,9 @@ class ExpenseTracker {
         const remaining = monthBudget - totalSpent;
         const daysLeft = this.getDaysRemainingInMonth();
 
-        this.summaryOriginalBudget.textContent = `$${monthBudget.toFixed(2)}`;
-        this.summaryTotalSpent.textContent = `$${totalSpent.toFixed(2)}`;
-        this.summaryRemaining.textContent = `$${remaining.toFixed(2)}`;
+        this.summaryOriginalBudget.textContent = `₹${monthBudget.toFixed(2)}`;
+        this.summaryTotalSpent.textContent = `₹${totalSpent.toFixed(2)}`;
+        this.summaryRemaining.textContent = `₹${remaining.toFixed(2)}`;
         this.summaryDaysLeft.textContent = daysLeft;
     }
 
@@ -500,7 +500,7 @@ class ExpenseTracker {
         // Clear form
         this.budgetOffset.value = '';
         
-        this.showSuccessMessage(`Budget adjusted by $${offset.toFixed(2)}`);
+        this.showSuccessMessage(`Budget adjusted by ₹${offset.toFixed(2)}`);
     }
 
     showDeleteConfirmation(dateKey, expenseId) {
@@ -515,7 +515,7 @@ class ExpenseTracker {
         
         this.confirmationMessage.innerHTML = `
             Are you sure you want to delete this expense?<br>
-            <strong>${this.getCategoryEmoji(expense.category)} ${expense.category}: $${expense.amount.toFixed(2)}</strong>
+            <strong>${this.getCategoryEmoji(expense.category)} ${expense.category}: ₹${expense.amount.toFixed(2)}</strong>
             ${expense.description ? `<br><em>"${expense.description}"</em>` : ''}
         `;
         
@@ -559,7 +559,7 @@ class ExpenseTracker {
         this.closeConfirmationModal();
         
         // Show success message
-        this.showSuccessMessage(`Expense deleted: ${this.getCategoryEmoji(expense.category)} $${expense.amount.toFixed(2)}`);
+        this.showSuccessMessage(`Expense deleted: ${this.getCategoryEmoji(expense.category)} ₹${expense.amount.toFixed(2)}`);
     }
 
     handleExpenseSubmit(e) {

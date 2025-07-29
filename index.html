@@ -24,11 +24,11 @@
                     <div class="budget-display">
                         <div class="budget-info">
                             <span class="budget-label">Budget:</span>
-                            <span class="budget-amount" id="budgetAmount">$0</span>
+                            <span class="budget-amount" id="budgetAmount">₹0</span>
                         </div>
                         <div class="budget-info">
                             <span class="budget-label">Daily Target:</span>
-                            <span class="daily-budget" id="dailyBudget">$0</span>
+                            <span class="daily-budget" id="dailyBudget">₹0</span>
                         </div>
                     </div>
                     <button type="button" id="manageBudgetBtn" class="manage-budget-btn">Manage Budget</button>
@@ -42,7 +42,7 @@
                     </div>
                     <div class="form-group">
                         <label for="expenseAmount">Amount:</label>
-                        <input type="number" id="expenseAmount" step="0.01" min="0" placeholder="0.00" required>
+                        <input type="number" id="expenseAmount" step="0.01" min="0" placeholder="100.00" required>
                     </div>
                     <div class="form-group">
                         <label for="expenseCategory">Category:</label>
@@ -72,7 +72,7 @@
                 <h3 id="modalDate"></h3>
                 <div id="modalExpenses"></div>
                 <div class="modal-total">
-                    <strong>Total: $<span id="modalTotal">0.00</span></strong>
+                    <strong>Total: ₹<span id="modalTotal">0.00</span></strong>
                 </div>
                 <div class="budget-status" id="modalBudgetStatus"></div>
             </div>
@@ -91,7 +91,7 @@
                     </div>
                     <div class="form-group">
                         <label for="budgetAmountInput">Budget Amount:</label>
-                        <input type="number" id="budgetAmountInput" step="0.01" min="0" placeholder="3000.00" required>
+                        <input type="number" id="budgetAmountInput" step="0.01" min="0" placeholder="30000.00" required>
                     </div>
                     <div class="form-group">
                         <label>
@@ -115,15 +115,15 @@
                     <h4>Current Month Summary</h4>
                     <div class="summary-item">
                         <span>Original Budget:</span>
-                        <span id="summaryOriginalBudget">$0.00</span>
+                        <span id="summaryOriginalBudget">₹0.00</span>
                     </div>
                     <div class="summary-item">
                         <span>Total Spent:</span>
-                        <span id="summaryTotalSpent">$0.00</span>
+                        <span id="summaryTotalSpent">₹0.00</span>
                     </div>
                     <div class="summary-item">
                         <span>Remaining:</span>
-                        <span id="summaryRemaining">$0.00</span>
+                        <span id="summaryRemaining">₹0.00</span>
                     </div>
                     <div class="summary-item">
                         <span>Days Left:</span>
