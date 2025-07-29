@@ -77,85 +77,102 @@ main {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
-.calendar-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    margin-bottom: 1px;
-}
-
-.day-name {
-    background: #6c757d;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #dee2e6;
-}
-
-.calendar-day {
+/* FullCalendar Custom Styling */
+#calendar {
     background: white;
-    min-height: 100px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fc {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.fc-toolbar {
+    margin-bottom: 20px;
+}
+
+.fc-toolbar-title {
+    font-size: 1.8rem !important;
+    font-weight: 600 !important;
+    color: #495057;
+}
+
+.fc-button {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.fc-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3) !important;
+}
+
+.fc-button:disabled {
+    opacity: 0.6 !important;
+    transform: none !important;
+}
+
+.fc-daygrid-day {
     cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
+    transition: background-color 0.2s ease;
 }
 
-.calendar-day:hover {
-    background: #e3f2fd;
-    transform: scale(1.02);
+.fc-daygrid-day:hover {
+    background-color: #e3f2fd !important;
 }
 
-.calendar-day.other-month {
-    background: #f8f9fa;
-    color: #adb5bd;
+.fc-day-today {
+    background-color: #fff3cd !important;
 }
 
-.calendar-day.today {
-    background: #fff3cd;
-    border: 2px solid #ffc107;
-}
-
-.day-number {
+.fc-daygrid-day-number {
     font-weight: 600;
-    font-size: 1rem;
-    margin-bottom: 5px;
+    color: #495057;
+    padding: 8px;
 }
 
-.day-expenses {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.fc-event {
+    background: #28a745 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    margin: 1px 0 !important;
+    font-size: 0.75rem !important;
+    cursor: pointer !important;
 }
 
-.expense-indicator {
-    background: #28a745;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 0.7rem;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.fc-event:hover {
+    background: #1e7e34 !important;
 }
 
-.expense-total {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: #28a745;
-    margin-top: 5px;
+.fc-event-title {
+    font-weight: 600 !important;
+}
+
+.fc-daygrid-more-link {
+    background: #007bff !important;
+    color: white !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+    margin: 1px 0 !important;
+}
+
+.fc-col-header-cell {
+    background: #6c757d !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 12px 8px !important;
+}
+
+.fc-daygrid-day-frame {
+    min-height: 100px;
 }
 
 .expense-form-container {
@@ -319,30 +336,28 @@ button[type="submit"]:hover {
         padding: 20px;
     }
     
-    .calendar-day {
+    .calendar-container {
+        padding: 15px;
+    }
+    
+    #calendar {
+        padding: 15px;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1.4rem !important;
+    }
+    
+    .fc-button {
+        padding: 6px 12px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .fc-daygrid-day-frame {
         min-height: 80px;
-        padding: 5px;
-    }
-    
-    .day-number {
-        font-size: 0.9rem;
-    }
-    
-    .expense-indicator {
-        font-size: 0.6rem;
-        padding: 1px 4px;
     }
     
     header h1 {
         font-size: 2rem;
-    }
-    
-    .month-navigation {
-        gap: 20px;
-    }
-    
-    #currentMonth {
-        font-size: 1.4rem;
-        min-width: auto;
     }
 }

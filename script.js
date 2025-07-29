@@ -1,20 +1,15 @@
 class ExpenseTracker {
     constructor() {
-        this.currentDate = new Date();
         this.expenses = this.loadExpenses();
-        this.selectedDate = null;
+        this.calendar = null;
         
         this.initializeElements();
         this.bindEvents();
-        this.renderCalendar();
+        this.initializeCalendar();
         this.setTodayAsDefault();
     }
 
     initializeElements() {
-        this.calendarGrid = document.getElementById('calendarGrid');
-        this.currentMonthElement = document.getElementById('currentMonth');
-        this.prevMonthBtn = document.getElementById('prevMonth');
-        this.nextMonthBtn = document.getElementById('nextMonth');
         this.expenseForm = document.getElementById('expenseForm');
         this.expenseDateInput = document.getElementById('expenseDate');
         this.expenseAmountInput = document.getElementById('expenseAmount');
@@ -28,8 +23,6 @@ class ExpenseTracker {
     }
 
     bindEvents() {
-        this.prevMonthBtn.addEventListener('click', () => this.previousMonth());
-        this.nextMonthBtn.addEventListener('click', () => this.nextMonth());
         this.expenseForm.addEventListener('submit', (e) => this.handleExpenseSubmit(e));
         this.closeModalBtn.addEventListener('click', () => this.closeModal());
         this.expenseModal.addEventListener('click', (e) => {
@@ -40,6 +33,33 @@ class ExpenseTracker {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') this.closeModal();
         });
+    }
+
+    initializeCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        
+        this.calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,dayGridWeek'
+            },
+            height: 'auto',
+            events: this.getEventsFromExpenses(),
+            dateClick: (info) => {
+                this.handleDateClick(info);
+            },
+            eventClick: (info) => {
+                this.handleEventClick(info);
+            },
+            dayMaxEvents: 3,
+            moreLinkClick: 'popover',
+            displayEventTime: false,
+            eventDisplay: 'block'
+        });
+        
+        this.calendar.render();
     }
 
     setTodayAsDefault() {
@@ -85,99 +105,72 @@ class ExpenseTracker {
         return emojis[category] || '📝';
     }
 
-    previousMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
-        this.renderCalendar();
+    getCategoryColor(category) {
+        const colors = {
+            food: '#e74c3c',
+            transport: '#3498db',
+            entertainment: '#9b59b6',
+            shopping: '#e67e22',
+            bills: '#f39c12',
+            healthcare: '#27ae60',
+            other: '#95a5a6'
+        };
+        return colors[category] || '#95a5a6';
     }
 
-    nextMonth() {
-        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
-        this.renderCalendar();
-    }
-
-    renderCalendar() {
-        const year = this.currentDate.getFullYear();
-        const month = this.currentDate.getMonth();
+    getEventsFromExpenses() {
+        const events = [];
         
-        // Update month display
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        this.currentMonthElement.textContent = `${monthNames[month]} ${year}`;
-
-        // Clear calendar grid
-        this.calendarGrid.innerHTML = '';
-
-        // Get first day of month and number of days
-        const firstDayOfMonth = new Date(year, month, 1);
-        const lastDayOfMonth = new Date(year, month + 1, 0);
-        const firstDayWeekday = firstDayOfMonth.getDay();
-        const daysInMonth = lastDayOfMonth.getDate();
-
-        // Add days from previous month
-        const prevMonth = new Date(year, month - 1, 0);
-        const daysInPrevMonth = prevMonth.getDate();
-        
-        for (let i = firstDayWeekday - 1; i >= 0; i--) {
-            const dayNumber = daysInPrevMonth - i;
-            const dayElement = this.createDayElement(dayNumber, true, year, month - 1);
-            this.calendarGrid.appendChild(dayElement);
-        }
-
-        // Add days of current month
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = this.createDayElement(day, false, year, month);
-            this.calendarGrid.appendChild(dayElement);
-        }
-
-        // Add days from next month to fill the grid
-        const totalCells = this.calendarGrid.children.length;
-        const remainingCells = 42 - totalCells; // 6 rows × 7 days = 42 cells
-        
-        for (let day = 1; day <= remainingCells; day++) {
-            const dayElement = this.createDayElement(day, true, year, month + 1);
-            this.calendarGrid.appendChild(dayElement);
-        }
-    }
-
-    createDayElement(dayNumber, isOtherMonth, year, month) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        
-        if (isOtherMonth) {
-            dayElement.classList.add('other-month');
-        }
-
-        const date = new Date(year, month, dayNumber);
-        const today = new Date();
-        
-        if (!isOtherMonth && 
-            date.toDateString() === today.toDateString()) {
-            dayElement.classList.add('today');
-        }
-
-        const dateKey = this.formatDateKey(date);
-        const dayExpenses = this.expenses[dateKey] || [];
-        const totalAmount = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-
-        dayElement.innerHTML = `
-            <div class="day-number">${dayNumber}</div>
-            <div class="day-expenses">
-                ${dayExpenses.slice(0, 2).map(expense => 
-                    `<div class="expense-indicator">${this.getCategoryEmoji(expense.category)} $${expense.amount.toFixed(2)}</div>`
-                ).join('')}
-                ${dayExpenses.length > 2 ? `<div class="expense-indicator">+${dayExpenses.length - 2} more</div>` : ''}
-            </div>
-            ${totalAmount > 0 ? `<div class="expense-total">$${totalAmount.toFixed(2)}</div>` : ''}
-        `;
-
-        dayElement.addEventListener('click', () => {
-            this.selectedDate = dateKey;
-            this.showExpenseModal(dateKey);
+        Object.keys(this.expenses).forEach(dateKey => {
+            const dayExpenses = this.expenses[dateKey];
+            const totalAmount = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+            
+            if (dayExpenses.length > 0) {
+                // Add a summary event for the day
+                events.push({
+                    id: `summary-${dateKey}`,
+                    title: `💰 $${totalAmount.toFixed(2)} (${dayExpenses.length} items)`,
+                    date: dateKey,
+                    backgroundColor: '#28a745',
+                    borderColor: '#1e7e34',
+                    extendedProps: {
+                        type: 'summary',
+                        expenses: dayExpenses,
+                        total: totalAmount
+                    }
+                });
+            }
         });
+        
+        return events;
+    }
 
-        return dayElement;
+    handleDateClick(info) {
+        // Set the form date to clicked date
+        this.expenseDateInput.value = info.dateStr;
+        
+        // Show expenses for this date
+        this.showExpenseModal(info.dateStr);
+    }
+
+    handleEventClick(info) {
+        // Show expenses for the event's date
+        const dateStr = info.event.startStr;
+        this.showExpenseModal(dateStr);
+        
+        // Prevent default event behavior
+        info.jsEvent.preventDefault();
+    }
+
+    refreshCalendar() {
+        if (this.calendar) {
+            // Remove all existing events
+            this.calendar.removeAllEvents();
+            
+            // Add updated events
+            const events = this.getEventsFromExpenses();
+            this.calendar.addEventSource(events);
+        }
     }
 
     showExpenseModal(dateKey) {
@@ -240,7 +233,7 @@ class ExpenseTracker {
 
         this.expenses[date].push(expense);
         this.saveExpenses();
-        this.renderCalendar();
+        this.refreshCalendar();
 
         // Clear form
         this.expenseAmountInput.value = '';
