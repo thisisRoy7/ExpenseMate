@@ -311,10 +311,9 @@ class ExpenseTracker {
                         return result;
                     }
 
-                    result.expenses.push({ 
-                        amount, 
-                        category: this.expenseCategorySelect.value || 'other'
-                    });
+                    // For expressions with +, use 'other' if no category selected
+                    const category = this.expenseCategorySelect.value || 'other';
+                    result.expenses.push({ amount, category });
                     total += amount;
                 }
             }
@@ -529,10 +528,20 @@ class ExpenseTracker {
         this.expenseDateInput.value = info.dateStr;
         
         // Focus on amount input for quick expense entry
-        this.expenseAmountInput.focus();
+        setTimeout(() => {
+            this.expenseAmountInput.focus();
+        }, 100);
         
-        // Show expenses for this date
-        this.showExpenseModal(info.dateStr);
+        // Close any open modals first
+        this.closeModal();
+        
+        // Scroll to form area on mobile
+        if (window.innerWidth <= 768) {
+            document.querySelector('.expense-form-container').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
     }
 
     handleEventClick(info) {
@@ -786,6 +795,17 @@ class ExpenseTracker {
         
         if (!parsed.isValid) {
             alert(`Error: ${parsed.error}`);
+            return;
+        }
+
+        // Check if we need a category for simple number input
+        const isSimpleNumber = !isNaN(parseFloat(expressionInput)) && 
+                              isFinite(parseFloat(expressionInput)) && 
+                              !expressionInput.includes('+') && 
+                              !expressionInput.includes('(');
+                              
+        if (isSimpleNumber && !this.expenseCategorySelect.value) {
+            alert('Please select a category for simple amount entries, or use expressions like "100(food)"');
             return;
         }
 

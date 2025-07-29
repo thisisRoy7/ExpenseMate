@@ -77,6 +77,16 @@ main {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
+.calendar-help {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 /* FullCalendar Custom Styling */
 #calendar {
     background: white;
@@ -121,10 +131,27 @@ main {
 .fc-daygrid-day {
     cursor: pointer;
     transition: background-color 0.2s ease;
+    position: relative;
 }
 
 .fc-daygrid-day:hover {
     background-color: #e3f2fd !important;
+}
+
+.fc-daygrid-day:hover::after {
+    content: "Click to add expense";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(79, 172, 254, 0.9);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
 }
 
 .fc-day-today {
