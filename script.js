@@ -259,8 +259,7 @@ class ExpenseTracker {
             isValid: false,
             expenses: [],
             total: 0,
-            error: null,
-            warnings: [] // Add warnings for invalid parts
+            error: null
         };
 
         try {
@@ -286,7 +285,6 @@ class ExpenseTracker {
             // Parse complex expression with + operator
             const parts = cleanExpr.split('+').map(part => part.trim());
             let total = 0;
-            let hasInvalid = false;
 
             for (const part of parts) {
                 if (!part) continue;
@@ -296,11 +294,10 @@ class ExpenseTracker {
                 if (categoryMatch) {
                     const amount = parseFloat(categoryMatch[1]);
                     const categoryInput = categoryMatch[2];
-
+                    
                     if (isNaN(amount) || amount <= 0) {
-                        result.warnings.push(`Invalid amount: ${categoryMatch[1]}`);
-                        hasInvalid = true;
-                        continue;
+                        result.error = `Invalid amount: ${categoryMatch[1]}`;
+                        return result;
                     }
 
                     const category = this.fuzzyMatchCategory(categoryInput);
@@ -310,9 +307,8 @@ class ExpenseTracker {
                     // Simple number without category
                     const amount = parseFloat(part);
                     if (isNaN(amount) || amount <= 0) {
-                        result.warnings.push(`Invalid amount: ${part}`);
-                        hasInvalid = true;
-                        continue;
+                        result.error = `Invalid amount: ${part}`;
+                        return result;
                     }
 
                     // For expressions with +, use 'other' if no category selected
@@ -323,15 +319,12 @@ class ExpenseTracker {
             }
 
             if (result.expenses.length === 0) {
-                result.error = hasInvalid ? result.warnings.join('; ') : 'No valid expenses found';
+                result.error = 'No valid expenses found';
                 return result;
             }
 
             result.isValid = true;
             result.total = total;
-            if (hasInvalid) {
-                result.error = result.warnings.join('; ');
-            }
             return result;
 
         } catch (error) {
@@ -800,8 +793,7 @@ class ExpenseTracker {
         // Parse the expression
         const parsed = this.parseExpenseExpression(expressionInput);
         
-        // Only block if no valid expenses
-        if (!parsed.isValid || parsed.expenses.length === 0) {
+        if (!parsed.isValid) {
             alert(`Error: ${parsed.error}`);
             return;
         }
