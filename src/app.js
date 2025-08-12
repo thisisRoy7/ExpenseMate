@@ -1,4 +1,4 @@
-import { formatDateDisplay, getCategoryEmoji } from './utils.js';
+import { formatDateDisplay } from './utils.js';
 import { getMonthKey, getCurrentMonthBudget, getDaysRemainingInMonth, getMonthlySpent, calculateDynamicDailyBudget } from './budget.js';
 import { initializeCalendar, refreshCalendar, getDayBudgetStatus } from './calendar.js';
 
@@ -182,7 +182,7 @@ class ExpenseTracker {
                 <div class="expense-item" data-expense-id="${expense.id}" data-date="${dateKey}">
                     <button class="delete-expense-btn" onclick="expenseTracker.showDeleteConfirmation('${dateKey}', '${expense.id}')" title="Delete expense">×</button>
                     <div class="expense-item-header">
-                        <span class="expense-category">${getCategoryEmoji(expense.category)} ${expense.category}</span>
+                        <span class="expense-category">${expense.category}</span>
                         <span class="expense-amount">₹${expense.amount.toFixed(2)}</span>
                     </div>
                     ${expense.description ? `<div class="expense-description">${expense.description}</div>` : ''}
@@ -440,7 +440,10 @@ class ExpenseTracker {
   }
 }
 
+import { initThemeToggle } from './theme.js';
+
 let expenseTracker;
 document.addEventListener('DOMContentLoaded', () => {
   window.expenseTracker = new ExpenseTracker();
+  initThemeToggle('themeToggleBtn');
 });

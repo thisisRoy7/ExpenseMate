@@ -1,5 +1,4 @@
 import { calculateDynamicDailyBudget } from './budget.js';
-import { getCategoryEmoji } from './utils.js';
 
 export function getDayBudgetStatus(expenses, budgets, dateKey) {
   const dailyBudget = calculateDynamicDailyBudget(expenses, budgets);
@@ -24,23 +23,18 @@ export function getEventsFromExpenses(expenses, budgets) {
 
     let backgroundColor = '#28a745';
     let borderColor = '#1e7e34';
-    let statusIcon = '💰';
-
     if (budgetStatus === 'over-budget') {
-      backgroundColor = '#dc3545';
-      borderColor = '#c82333';
-      statusIcon = '🚨';
+      backgroundColor = '#000000';
+      borderColor = '#000000';
     } else if (budgetStatus === 'on-budget') {
-      backgroundColor = '#ffc107';
-      borderColor = '#e0a800';
-      statusIcon = '⚠️';
+      backgroundColor = '#888888';
+      borderColor = '#888888';
     } else if (budgetStatus === 'under-budget') {
-      backgroundColor = '#28a745';
-      borderColor = '#1e7e34';
-      statusIcon = '✅';
+      backgroundColor = '#FFFFFF';
+      borderColor = '#000000';
     }
 
-    let title = `${statusIcon} ₹${totalAmount.toFixed(2)} (${dayExpenses.length} items)`;
+    let title = `₹${totalAmount.toFixed(2)} (${dayExpenses.length} items)`;
     if (dailyBudget > 0) {
       title += ` / ₹${dailyBudget.toFixed(0)}`;
     }

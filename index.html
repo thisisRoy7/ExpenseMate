@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>💰 Expense Tracker</h1>
+            <div class="header-row"><h1>Expense Tracker</h1><button id="themeToggleBtn" class="theme-toggle">Dark Mode</button></div>
         </header>
 
         <main>
@@ -51,13 +51,13 @@
                         <label for="expenseCategory">Category:</label>
                         <select id="expenseCategory">
                             <option value="">Select category (defaults to Other)</option>
-                            <option value="food">🍔 Food</option>
-                            <option value="transport">🚗 Transport</option>
-                            <option value="entertainment">🎬 Entertainment</option>
-                            <option value="shopping">🛍️ Shopping</option>
-                            <option value="bills">📄 Bills</option>
-                            <option value="healthcare">🏥 Healthcare</option>
-                            <option value="other">📝 Other</option>
+                                                         <option value="food">Food</option>
+                             <option value="transport">Transport</option>
+                             <option value="entertainment">Entertainment</option>
+                             <option value="shopping">Shopping</option>
+                             <option value="bills">Bills</option>
+                             <option value="healthcare">Healthcare</option>
+                             <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -150,5 +150,6 @@
 
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/theme.js"></script>
 </body>
 </html>
