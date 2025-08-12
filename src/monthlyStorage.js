@@ -18,6 +18,10 @@ export function readContainer(monthKey) {
 export function writeContainer(monthKey, container) {
   const toWrite = normalizeContainer(monthKey, container);
   toWrite.updatedAt = new Date().toISOString();
+  // Ensure year/monthNumber are consistent with key on every write
+  const [y, m] = monthKey.split('-').map(Number);
+  toWrite.year = y;
+  toWrite.monthNumber = m;
   localStorage.setItem(KEY_PREFIX + monthKey, JSON.stringify(toWrite));
   return toWrite;
 }
@@ -104,12 +108,16 @@ export function computeDailyTargetForDate(expenses, date) {
 }
 
 function createDefaultContainer(monthKey) {
-  return normalizeContainer(monthKey, { monthKey, budget: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+  const [y, m] = monthKey.split('-').map(Number);
+  return normalizeContainer(monthKey, { monthKey, budget: 0, year: y, monthNumber: m, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
 }
 
 function normalizeContainer(monthKey, obj) {
+  const [y, m] = monthKey.split('-').map(Number);
   return {
     monthKey,
+    year: Number(obj?.year || y),
+    monthNumber: Number(obj?.monthNumber || m),
     budget: Number(obj?.budget || 0),
     createdAt: obj?.createdAt || null,
     updatedAt: obj?.updatedAt || null,

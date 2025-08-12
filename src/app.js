@@ -100,8 +100,11 @@ class ExpenseTracker {
   }
 
   openBudgetModal() {
-    const today = new Date();
-    this.budgetMonth.value = today.toISOString().slice(0, 7);
+    // Use active calendar month if available; fallback to current month
+    const defaultMk = this.budgetMonth?.value || new Date().toISOString().slice(0, 7);
+    this.budgetMonth.value = defaultMk;
+    // Touch the container to ensure it exists and has year/monthNumber
+    const c = readContainer(defaultMk);
     this.updateBudgetSummary();
     this.budgetModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
