@@ -365,7 +365,7 @@ class ExpenseTracker {
     const date = this.expenseDateInput.value;
     const amountStr = this.expenseAmountInput.value.trim();
     const description = this.expenseDescriptionInput.value.trim();
-    const category = this.expenseCategorySelect.value;
+    const category = this.expenseCategorySelect.value || 'other';
 
     if (!date || !amountStr) {
       alert('Please fill in date and amount fields');
@@ -378,10 +378,7 @@ class ExpenseTracker {
       return;
     }
 
-    if (!category) {
-      alert('Please select a category');
-      return;
-    }
+    // default category handled above
 
     const timestamp = new Date().toISOString();
     if (!this.expenses[date]) {
