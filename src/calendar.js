@@ -63,7 +63,7 @@ export function getEventsFromExpenses(expenses, budgets, snapshots) {
   return events;
 }
 
-export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateClick, onEventClick, snapshotsRef) {
+export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateClick, onEventClick, snapshotsRef, onDatesSet) {
   const events = getEventsFromExpenses(expensesRef(), budgetsRef(), snapshotsRef ? snapshotsRef() : {});
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
@@ -76,6 +76,13 @@ export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateCl
     events,
     dateClick: (info) => onDateClick(info),
     eventClick: (info) => onEventClick(info),
+    datesSet: (info) => {
+      if (typeof onDatesSet === 'function') {
+        const ref = new Date(info.start.getTime());
+        ref.setDate(ref.getDate() + 15); // mid-range to get active month
+        onDatesSet(ref);
+      }
+    },
     dayMaxEvents: 3,
     moreLinkClick: 'popover',
     displayEventTime: false,

@@ -2,11 +2,12 @@ import { formatDateDisplay } from './utils.js';
 import { getMonthKey, getCurrentMonthBudget, getDaysRemainingInMonth, getMonthlySpent, calculateDynamicDailyBudget } from './budget.js';
 import { initializeCalendar, refreshCalendar, getDayBudgetStatus } from './calendar.js';
 import { loadMonthSnapshots, saveMonthSnapshots, ensureClosedSnapshots, getDailyTargetForDate } from './monthManager.js';
+import { loadBudgetStore, saveBudgetStore, getMonthBudget, setMonthBudget, applyMonthOffset } from './budgetStore.js';
 
 class ExpenseTracker {
   constructor() {
     this.expenses = this.loadExpenses();
-    this.budgets = this.loadBudgets();
+    this.budgetStore = loadBudgetStore();
     this.monthSnapshots = loadMonthSnapshots();
     this.calendar = null;
 
@@ -19,13 +20,12 @@ class ExpenseTracker {
 
   saveAll() {
     this.saveExpenses();
-    this.saveBudgets();
+    saveBudgetStore(this.budgetStore);
     saveMonthSnapshots(this.monthSnapshots);
   }
 
   calculateDynamicDailyBudgetFor(date = new Date()) {
-    // Use snapshot-aware calculation
-    return getDailyTargetForDate(this.expenses, this.budgets, this.monthSnapshots, date);
+    return getDailyTargetForDate(this.expenses, { monthlyBudgets: this.budgetStore }, this.monthSnapshots, date);
   }
 
   calculateDynamicDailyBudget() {
@@ -33,10 +33,9 @@ class ExpenseTracker {
   }
 
   refreshCalendar() {
-    // Ensure month snapshots are closed for past months
-    this.monthSnapshots = ensureClosedSnapshots(this.expenses, this.budgets, this.monthSnapshots, new Date());
+    this.monthSnapshots = ensureClosedSnapshots(this.expenses, { monthlyBudgets: this.budgetStore }, this.monthSnapshots, new Date());
     saveMonthSnapshots(this.monthSnapshots);
-    refreshCalendar(this.calendar, () => this.expenses, () => this.budgets, () => this.monthSnapshots);
+    refreshCalendar(this.calendar, () => this.expenses, () => ({ monthlyBudgets: this.budgetStore }), () => this.monthSnapshots);
   }
 
   handleDateClick(info) {
@@ -126,39 +125,34 @@ class ExpenseTracker {
   }
 
   updateBudgetDisplay() {
-    // Ensure snapshots are current for past months
-    this.monthSnapshots = ensureClosedSnapshots(this.expenses, this.budgets, this.monthSnapshots, new Date());
+    this.monthSnapshots = ensureClosedSnapshots(this.expenses, { monthlyBudgets: this.budgetStore }, this.monthSnapshots, new Date());
     saveMonthSnapshots(this.monthSnapshots);
 
     const mk = this.budgetMonth?.value || new Date().toISOString().slice(0, 7);
     const [yy, mm] = mk.split('-').map(Number);
     const ctxDate = new Date(yy, mm - 1, new Date().getDate());
 
-    const monthBudget = this.budgets.monthlyBudgets?.[mk] || 0;
+    const monthBudget = getMonthBudget(this.budgetStore, mk);
     const dailyBudget = this.calculateDynamicDailyBudgetFor(ctxDate);
     this.budgetAmount.textContent = `₹${monthBudget.toFixed(0)}`;
     this.dailyBudget.textContent = `₹${dailyBudget.toFixed(0)}`;
   }
 
   updateBudgetSummary() {
-    // Determine context month from the month picker if available, else today
     const mk = this.budgetMonth?.value || new Date().toISOString().slice(0, 7);
     const [yy, mm] = mk.split('-').map(Number);
     const year = yy;
     const month = mm - 1;
 
-    const monthBudget = this.budgets.monthlyBudgets?.[mk] || 0;
+    const monthBudget = getMonthBudget(this.budgetStore, mk);
     const totalSpent = getMonthlySpent(this.expenses, year, month);
     const remaining = monthBudget - totalSpent;
 
-    // Days left if current month, else full days of that month
     const today = new Date();
     let daysLeft;
     if (today.getFullYear() === year && today.getMonth() === month) {
       daysLeft = getDaysRemainingInMonth(today);
     } else {
-      // full remaining days = total days - spent days; for summary, show total days
-      const dummyDate = new Date(year, month, 1);
       daysLeft = new Date(year, month + 1, 0).getDate();
     }
 
@@ -177,8 +171,7 @@ class ExpenseTracker {
       return;
     }
 
-    // Set budget only for the selected month (isolation)
-    this.budgets.monthlyBudgets[monthKey] = amount;
+    this.budgetStore = setMonthBudget(this.budgetStore, monthKey, amount);
 
     this.saveAll();
     this.updateBudgetDisplay();
@@ -186,7 +179,7 @@ class ExpenseTracker {
     this.refreshCalendar();
 
     this.budgetAmountInput.value = '';
-    this.applyToAllMonths.checked = false; // retained for UI compatibility, but ignored
+    this.applyToAllMonths.checked = false;
 
     this.showSuccessMessage('Budget updated successfully!');
   }
@@ -200,20 +193,14 @@ class ExpenseTracker {
 
     const today = new Date();
     const monthKey = getMonthKey(today);
-    const currentBudget = this.getCurrentMonthBudget();
+    const currentBudget = getMonthBudget(this.budgetStore, monthKey);
 
     if (currentBudget <= 0) {
       alert('Please set a budget for this month first');
       return;
     }
 
-    const newBudget = currentBudget + offset;
-    if (newBudget < 0) {
-      alert('Offset would result in negative budget');
-      return;
-    }
-
-    this.budgets.monthlyBudgets[monthKey] = newBudget;
+    this.budgetStore = applyMonthOffset(this.budgetStore, monthKey, offset);
     this.saveAll();
     this.updateBudgetDisplay();
     this.updateBudgetSummary();
@@ -433,11 +420,21 @@ class ExpenseTracker {
     this.calendar = initializeCalendar(
       calendarEl,
       () => this.expenses,
-      () => this.budgets,
+      () => ({ monthlyBudgets: this.budgetStore }),
       (info) => this.handleDateClick(info),
       (info) => this.handleEventClick(info),
-      () => this.monthSnapshots
+      () => this.monthSnapshots,
+      (activeDate) => this.handleActiveMonthChange(activeDate)
     );
+  }
+
+  handleActiveMonthChange(activeDate) {
+    const mk = `${activeDate.getFullYear()}-${String(activeDate.getMonth() + 1).padStart(2, '0')}`;
+    if (this.budgetMonth) {
+      this.budgetMonth.value = mk;
+    }
+    this.updateBudgetDisplay();
+    this.updateBudgetSummary();
   }
 
   setTodayAsDefault() {
