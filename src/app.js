@@ -191,7 +191,7 @@ class ExpenseTracker {
             .map(
               (expense) => `
                 <div class="expense-item" data-expense-id="${expense.id}" data-date="${dateKey}">
-                    <button class="delete-expense-btn" onclick="expenseTracker.showDeleteConfirmation('${dateKey}', '${expense.id}')" title="Delete expense">×</button>
+                    <button class="delete-expense-btn" type="button" title="Delete expense">×</button>
                     <div class="expense-item-header">
                         <span class="expense-category">${expense.category}</span>
                         <span class="expense-amount">₹${expense.amount.toFixed(2)}</span>
