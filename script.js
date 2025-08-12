@@ -23,8 +23,6 @@ class ExpenseTracker {
         this.modalExpenses = document.getElementById('modalExpenses');
         this.modalTotal = document.getElementById('modalTotal');
         this.modalBudgetStatus = document.getElementById('modalBudgetStatus');
-        this.expressionPreview = document.getElementById('expressionPreview');
-        
         // Budget elements
         this.budgetAmount = document.getElementById('budgetAmount');
         this.dailyBudget = document.getElementById('dailyBudget');
@@ -68,9 +66,7 @@ class ExpenseTracker {
         this.setBudgetBtn.addEventListener('click', () => this.setBudget());
         this.applyOffsetBtn.addEventListener('click', () => this.applyOffset());
         
-        // Expression parsing
-        this.expenseAmountInput.addEventListener('input', () => this.handleExpressionInput());
-        this.expenseAmountInput.addEventListener('blur', () => this.hideExpressionPreview());
+        // Removed expression parsing UI
         
         // Confirmation modal events
         this.confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteExpense());
@@ -185,76 +181,8 @@ class ExpenseTracker {
         return colors[category] || '#95a5a6';
     }
 
-    // Fuzzy matching for category names
-    fuzzyMatchCategory(input) {
-        const categories = ['food', 'transport', 'entertainment', 'shopping', 'bills', 'healthcare', 'other'];
-        const aliases = {
-            food: ['food', 'eat', 'meal', 'lunch', 'dinner', 'breakfast', 'snack', 'restaurant', 'cafe', 'grocery', 'groceries'],
-            transport: ['transport', 'travel', 'taxi', 'bus', 'train', 'metro', 'uber', 'ola', 'petrol', 'fuel', 'gas'],
-            entertainment: ['entertainment', 'movie', 'cinema', 'game', 'fun', 'party', 'music', 'concert', 'show'],
-            shopping: ['shopping', 'shop', 'buy', 'purchase', 'cloth', 'clothes', 'dress', 'shirt', 'electronics'],
-            bills: ['bills', 'bill', 'electric', 'electricity', 'water', 'internet', 'phone', 'rent', 'utility'],
-            healthcare: ['healthcare', 'health', 'medical', 'doctor', 'medicine', 'pharmacy', 'hospital', 'clinic'],
-            other: ['other', 'misc', 'miscellaneous', 'random', 'general']
-        };
-
-        const normalizedInput = input.toLowerCase().trim();
-        
-        // Exact match first
-        for (const [category, words] of Object.entries(aliases)) {
-            if (words.includes(normalizedInput)) {
-                return category;
-            }
-        }
-        
-        // Fuzzy match with edit distance
-        let bestMatch = 'other';
-        let bestScore = Infinity;
-        
-        for (const [category, words] of Object.entries(aliases)) {
-            for (const word of words) {
-                const score = this.levenshteinDistance(normalizedInput, word);
-                if (score < bestScore && score <= 2) { // Allow up to 2 character differences
-                    bestScore = score;
-                    bestMatch = category;
-                }
-            }
-        }
-        
-        return bestMatch;
-    }
-
-    // Calculate edit distance between two strings
-    levenshteinDistance(str1, str2) {
-        const matrix = [];
-        
-        for (let i = 0; i <= str2.length; i++) {
-            matrix[i] = [i];
-        }
-        
-        for (let j = 0; j <= str1.length; j++) {
-            matrix[0][j] = j;
-        }
-        
-        for (let i = 1; i <= str2.length; i++) {
-            for (let j = 1; j <= str1.length; j++) {
-                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                    matrix[i][j] = matrix[i - 1][j - 1];
-                } else {
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j - 1] + 1, // substitution
-                        matrix[i][j - 1] + 1,     // insertion
-                        matrix[i - 1][j] + 1      // deletion
-                    );
-                }
-            }
-        }
-        
-        return matrix[str2.length][str1.length];
-    }
-
-    // Parse expense expressions like "90+40+10" or "90(food)+40(transport)"
-    parseExpenseExpression(expression) {
+    // Removed expression parsing feature
+    /* parseExpenseExpression(expression) {
         const result = {
             isValid: false,
             expenses: [],
@@ -341,11 +269,10 @@ class ExpenseTracker {
             return;
         }
 
-        const parsed = this.parseExpenseExpression(expression);
-        this.showExpressionPreview(parsed);
+        // Expression parsing removed
     }
 
-    showExpressionPreview(parsed) {
+    /* showExpressionPreview(parsed) {
         if (!parsed.isValid) {
             this.expressionPreview.className = 'expression-preview visible error';
             this.expressionPreview.innerHTML = `<strong>Error:</strong> ${parsed.error}`;
@@ -377,10 +304,8 @@ class ExpenseTracker {
         this.expressionPreview.innerHTML = html;
     }
 
-    hideExpressionPreview() {
-        setTimeout(() => {
-            this.expressionPreview.className = 'expression-preview';
-        }, 150); // Small delay to allow clicking on preview
+    hideExpressionPreview() {*/
+        // no-op
     }
 
     getMonthKey(date) {
@@ -783,54 +708,41 @@ class ExpenseTracker {
         e.preventDefault();
 
         const date = this.expenseDateInput.value;
-        const expressionInput = this.expenseAmountInput.value.trim();
+        const amountStr = this.expenseAmountInput.value.trim();
         const description = this.expenseDescriptionInput.value.trim();
+        const category = this.expenseCategorySelect.value;
 
-        if (!date || !expressionInput) {
+        if (!date || !amountStr) {
             alert('Please fill in date and amount fields');
             return;
         }
 
-        // Parse the expression
-        const parsed = this.parseExpenseExpression(expressionInput);
-        
-        if (!parsed.isValid) {
-            alert(`Error: ${parsed.error}`);
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount) || !isFinite(amount) || amount <= 0) {
+            alert('Please enter a valid positive amount');
             return;
         }
 
-        // Check if we need a category for simple number input
-        const isSimpleNumber = !isNaN(parseFloat(expressionInput)) && 
-                              isFinite(parseFloat(expressionInput)) && 
-                              !expressionInput.includes('+') && 
-                              !expressionInput.includes('(');
-                              
-        if (isSimpleNumber && !this.expenseCategorySelect.value) {
-            alert('Please select a category for simple amount entries, or use expressions like "100(food)"');
+        if (!category) {
+            alert('Please select a category');
             return;
         }
 
-        // Create expense entries
         const timestamp = new Date().toISOString();
-        let expenseCount = 0;
 
         if (!this.expenses[date]) {
             this.expenses[date] = [];
         }
 
-        // Add each parsed expense
-        parsed.expenses.forEach((parsedExpense, index) => {
-            const expense = {
-                id: `${Date.now()}-${index}`,
-                amount: parsedExpense.amount,
-                category: parsedExpense.category,
-                description: description || (parsed.expenses.length > 1 ? `Multi-expense entry ${index + 1}` : ''),
-                timestamp: timestamp
-            };
+        const expense = {
+            id: `${Date.now()}-0`,
+            amount: amount,
+            category: category,
+            description: description,
+            timestamp: timestamp
+        };
 
-            this.expenses[date].push(expense);
-            expenseCount++;
-        });
+        this.expenses[date].push(expense);
 
         this.saveExpenses();
         this.updateBudgetDisplay();
@@ -840,13 +752,9 @@ class ExpenseTracker {
         this.expenseAmountInput.value = '';
         this.expenseCategorySelect.value = '';
         this.expenseDescriptionInput.value = '';
-        this.hideExpressionPreview();
 
         // Show success message
-        const message = expenseCount === 1 ? 
-            `Expense added: ₹${parsed.total.toFixed(2)}` : 
-            `${expenseCount} expenses added: ₹${parsed.total.toFixed(2)} total`;
-        this.showSuccessMessage(message);
+        this.showSuccessMessage(`Expense added: ₹${amount.toFixed(2)}`);
         
         // Set focus back to amount input for quick entry
         this.expenseAmountInput.focus();

@@ -45,14 +45,12 @@
                     </div>
                     <div class="form-group">
                         <label for="expenseAmount">Amount:</label>
-                        <input type="text" id="expenseAmount" placeholder="100 or 90+40+10 or 90(food)+40(transport)" required>
-                        <small class="input-help">You can enter: simple amounts (100), expressions (90+40+10), or with categories (90(food)+40(transport))</small>
-                        <div id="expressionPreview" class="expression-preview"></div>
+                        <input type="number" id="expenseAmount" step="0.01" min="0.01" placeholder="Enter amount (e.g., 100.00)" required>
                     </div>
                     <div class="form-group">
-                        <label for="expenseCategory">Category (optional for expressions):</label>
+                        <label for="expenseCategory">Category:</label>
                         <select id="expenseCategory">
-                            <option value="">Select category (or use expressions)</option>
+                            <option value="">Select category</option>
                             <option value="food">🍔 Food</option>
                             <option value="transport">🚗 Transport</option>
                             <option value="entertainment">🎬 Entertainment</option>
