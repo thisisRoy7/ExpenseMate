@@ -68,7 +68,7 @@ export function ensureClosedSnapshots(expenses, budgets, snapshots, today = new 
 export function getMonthBudgetForDate(date, budgets, snapshots) {
   const mk = getMonthKey(date);
   if (snapshots?.[mk]?.closed) return snapshots[mk].budget || 0;
-  return budgets?.monthlyBudgets?.[mk] ?? (budgets?.useDefault ? budgets?.defaultBudget || 0 : 0);
+  return budgets?.monthlyBudgets?.[mk] ?? 0;
 }
 
 function computeSpentUpToDate(expenses, date) {
@@ -78,7 +78,7 @@ function computeSpentUpToDate(expenses, date) {
   let total = 0;
   Object.keys(expenses).forEach((dateKey) => {
     const [yy, mm, dd] = dateKey.split('-').map(Number);
-    if (yy === y && mm - 1 === m && dd < d) {
+    if (yy === y && mm - 1 === m && dd <= d) {
       total += expenses[dateKey].reduce((s, e) => s + e.amount, 0);
     }
   });

@@ -130,21 +130,37 @@ class ExpenseTracker {
     this.monthSnapshots = ensureClosedSnapshots(this.expenses, this.budgets, this.monthSnapshots, new Date());
     saveMonthSnapshots(this.monthSnapshots);
 
-    const today = new Date();
-    const monthBudget = this.getCurrentMonthBudget();
-    const dailyBudget = this.calculateDynamicDailyBudgetFor(today);
+    const mk = this.budgetMonth?.value || new Date().toISOString().slice(0, 7);
+    const [yy, mm] = mk.split('-').map(Number);
+    const ctxDate = new Date(yy, mm - 1, new Date().getDate());
+
+    const monthBudget = this.budgets.monthlyBudgets?.[mk] || 0;
+    const dailyBudget = this.calculateDynamicDailyBudgetFor(ctxDate);
     this.budgetAmount.textContent = `₹${monthBudget.toFixed(0)}`;
     this.dailyBudget.textContent = `₹${dailyBudget.toFixed(0)}`;
   }
 
   updateBudgetSummary() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const monthBudget = this.getCurrentMonthBudget();
+    // Determine context month from the month picker if available, else today
+    const mk = this.budgetMonth?.value || new Date().toISOString().slice(0, 7);
+    const [yy, mm] = mk.split('-').map(Number);
+    const year = yy;
+    const month = mm - 1;
+
+    const monthBudget = this.budgets.monthlyBudgets?.[mk] || 0;
     const totalSpent = getMonthlySpent(this.expenses, year, month);
     const remaining = monthBudget - totalSpent;
-    const daysLeft = getDaysRemainingInMonth(today);
+
+    // Days left if current month, else full days of that month
+    const today = new Date();
+    let daysLeft;
+    if (today.getFullYear() === year && today.getMonth() === month) {
+      daysLeft = getDaysRemainingInMonth(today);
+    } else {
+      // full remaining days = total days - spent days; for summary, show total days
+      const dummyDate = new Date(year, month, 1);
+      daysLeft = new Date(year, month + 1, 0).getDate();
+    }
 
     this.summaryOriginalBudget.textContent = `₹${monthBudget.toFixed(2)}`;
     this.summaryTotalSpent.textContent = `₹${totalSpent.toFixed(2)}`;
@@ -155,19 +171,14 @@ class ExpenseTracker {
   setBudget() {
     const monthKey = this.budgetMonth.value;
     const amount = parseFloat(this.budgetAmountInput.value);
-    const applyToAll = this.applyToAllMonths.checked;
 
-    if (!monthKey || !amount || amount < 0) {
+    if (!monthKey || !Number.isFinite(amount) || amount < 0) {
       alert('Please enter a valid month and budget amount');
       return;
     }
 
-    if (applyToAll) {
-      this.budgets.defaultBudget = amount;
-      this.budgets.useDefault = true;
-    } else {
-      this.budgets.monthlyBudgets[monthKey] = amount;
-    }
+    // Set budget only for the selected month (isolation)
+    this.budgets.monthlyBudgets[monthKey] = amount;
 
     this.saveAll();
     this.updateBudgetDisplay();
@@ -175,7 +186,7 @@ class ExpenseTracker {
     this.refreshCalendar();
 
     this.budgetAmountInput.value = '';
-    this.applyToAllMonths.checked = false;
+    this.applyToAllMonths.checked = false; // retained for UI compatibility, but ignored
 
     this.showSuccessMessage('Budget updated successfully!');
   }
