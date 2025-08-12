@@ -34,10 +34,11 @@ body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 0;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
 }
 
 header {
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card) 0%, rgba(0,0,0,0.02));
   color: var(--fg);
   padding: 20px;
   border-bottom: 1px solid var(--border);
@@ -75,6 +76,7 @@ main {
   border: 1px solid var(--border);
   border-radius: 0;
   padding: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 .calendar-help {
@@ -86,7 +88,7 @@ main {
 .fc { font-family: inherit; color: var(--fg); }
 .fc-toolbar { margin-bottom: 16px; }
 .fc-toolbar-title { font-size: 1.2rem !important; font-weight: 700 !important; color: var(--fg); }
-.fc-button { background: var(--bg) !important; color: var(--fg) !important; border: 1px solid var(--border) !important; border-radius: 0 !important; }
+.fc-button { background: var(--bg) !important; color: var(--fg) !important; border: 1px solid var(--border) !important; border-radius: 0 !important; box-shadow: 0 2px 0 rgba(0,0,0,0.4) !important; }
 .fc-button:hover { filter: brightness(0.9); }
 .fc-col-header-cell { background: var(--card) !important; color: var(--fg) !important; border-bottom: 1px solid var(--border) !important; }
 .fc-daygrid-day { cursor: pointer; }
@@ -94,6 +96,16 @@ main {
 .fc-daygrid-day-number { color: var(--fg); }
 .fc-event { border-radius: 0 !important; color: var(--bg) !important; }
 .fc-daygrid-more-link { background: var(--bg) !important; color: var(--fg) !important; border: 1px solid var(--border) !important; border-radius: 0 !important; }
+
+/* Calendar day box coloring */
+.fc-daygrid-day.day-over .fc-daygrid-day-frame { background: rgba(255, 0, 0, 0.12); }
+.fc-daygrid-day.day-warning .fc-daygrid-day-frame { background: rgba(255, 193, 7, 0.18); }
+.fc-daygrid-day.day-under .fc-daygrid-day-frame { background: rgba(40, 167, 69, 0.12); }
+
+/* Border emphasis for day statuses */
+.fc-daygrid-day.day-over { outline: 2px solid rgba(255,0,0,0.5); outline-offset: -2px; }
+.fc-daygrid-day.day-warning { outline: 2px solid rgba(255,193,7,0.6); outline-offset: -2px; }
+.fc-daygrid-day.day-under { outline: 2px solid rgba(40,167,69,0.5); outline-offset: -2px; }
 
 .expense-form-container {
   background: var(--card);
@@ -103,6 +115,7 @@ main {
   height: fit-content;
   position: sticky;
   top: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 
 .budget-section { margin-bottom: 24px; padding: 16px; background: var(--card); border: 1px solid var(--border); color: var(--fg); }
@@ -118,11 +131,11 @@ main {
 .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); background: var(--bg); color: var(--fg); border-radius: 0; }
 .form-group input:focus, .form-group select:focus { outline: none; box-shadow: none; border-color: var(--border); }
 
-button[type="submit"], .budget-action-btn { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--border); padding: 12px; border-radius: 0; font-weight: 600; cursor: pointer; }
+button[type="submit"], .budget-action-btn { width: 100%; background: var(--bg); color: var(--fg); border: 1px solid var(--border); padding: 12px; border-radius: 0; font-weight: 600; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,0.4); }
 button[type="submit"]:hover, .budget-action-btn:hover, .manage-budget-btn:hover, .theme-toggle:hover { filter: brightness(0.9); }
 
 .expense-modal, .budget-modal, .confirmation-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); }
-.modal-content { background: var(--card); margin: 5% auto; padding: 24px; border-radius: 0; width: 90%; max-width: 500px; border: 1px solid var(--border); color: var(--fg); }
+.modal-content { background: var(--card); margin: 5% auto; padding: 24px; border-radius: 0; width: 90%; max-width: 500px; border: 1px solid var(--border); color: var(--fg); box-shadow: 0 20px 40px rgba(0,0,0,0.25); }
 .close { color: var(--muted); position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
 
 #modalDate { margin-bottom: 16px; color: var(--fg); padding-right: 40px; }

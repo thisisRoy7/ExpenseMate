@@ -75,6 +75,20 @@ export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateCl
     moreLinkClick: 'popover',
     displayEventTime: false,
     eventDisplay: 'block',
+    dayCellClassNames: (arg) => {
+      const d = arg.date;
+      const dateKey = d.toISOString().split('T')[0];
+      const expenses = expensesRef();
+      const budgets = budgetsRef();
+      const items = expenses[dateKey] || [];
+      if (items.length === 0) return [];
+      const total = items.reduce((s, e) => s + e.amount, 0);
+      const daily = calculateDynamicDailyBudget(expenses, budgets);
+      if (daily <= 0) return [];
+      if (total > daily) return ['day-over'];
+      if (total >= daily * 0.9) return ['day-warning'];
+      return ['day-under'];
+    },
   });
   calendar.render();
   return calendar;
