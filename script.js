@@ -509,6 +509,7 @@ class ExpenseTracker {
                     date: dateKey,
                     backgroundColor: backgroundColor,
                     borderColor: borderColor,
+                    classNames: [budgetStatus],
                     extendedProps: {
                         type: 'summary',
                         expenses: dayExpenses,
