@@ -61,6 +61,17 @@ class ExpenseTracker {
       if (e.target === this.expenseModal) this.closeModal();
     });
 
+    // Ensure delete buttons inside the expenses modal work via event delegation
+    this.modalExpenses.addEventListener('click', (e) => {
+      const btn = e.target.closest('.delete-expense-btn');
+      if (!btn) return;
+      const item = btn.closest('.expense-item');
+      if (!item) return;
+      const dateKey = item.getAttribute('data-date');
+      const expenseId = item.getAttribute('data-expense-id');
+      this.showDeleteConfirmation(dateKey, expenseId);
+    });
+
     // Budget events
     this.manageBudgetBtn.addEventListener('click', () => this.openBudgetModal());
     this.closeBudgetModalBtn.addEventListener('click', () => this.closeBudgetModal());

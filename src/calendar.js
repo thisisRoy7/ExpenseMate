@@ -77,7 +77,10 @@ export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateCl
     eventDisplay: 'block',
     dayCellClassNames: (arg) => {
       const d = arg.date;
-      const dateKey = d.toISOString().split('T')[0];
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateKey = `${y}-${m}-${day}`;
       const expenses = expensesRef();
       const budgets = budgetsRef();
       const items = expenses[dateKey] || [];
