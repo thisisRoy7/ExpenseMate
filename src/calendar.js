@@ -1,7 +1,10 @@
 import { calculateDynamicDailyBudget } from './budget.js';
+import { getDailyTargetForDate } from './monthManager.js';
 
-export function getDayBudgetStatus(expenses, budgets, dateKey) {
-  const dailyBudget = calculateDynamicDailyBudget(expenses, budgets);
+export function getDayBudgetStatus(expenses, budgets, dateKey, snapshots) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const dateObj = new Date(y, m - 1, d);
+  const dailyBudget = getDailyTargetForDate(expenses, budgets, snapshots || {}, dateObj);
   const dayExpenses = expenses[dateKey] || [];
   const dayTotal = dayExpenses.reduce((s, e) => s + e.amount, 0);
   if (dailyBudget <= 0) return 'no-budget';
@@ -11,15 +14,17 @@ export function getDayBudgetStatus(expenses, budgets, dateKey) {
   return 'on-budget';
 }
 
-export function getEventsFromExpenses(expenses, budgets) {
+export function getEventsFromExpenses(expenses, budgets, snapshots) {
   const events = [];
   Object.keys(expenses).forEach((dateKey) => {
     const dayExpenses = expenses[dateKey];
     const totalAmount = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
     if (dayExpenses.length === 0) return;
 
-    const budgetStatus = getDayBudgetStatus(expenses, budgets, dateKey);
-    const dailyBudget = calculateDynamicDailyBudget(expenses, budgets);
+    const budgetStatus = getDayBudgetStatus(expenses, budgets, dateKey, snapshots);
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    const dailyBudget = getDailyTargetForDate(expenses, budgets, snapshots || {}, dateObj);
 
     let backgroundColor = '#111111';
     let borderColor = '#111111';
@@ -58,8 +63,8 @@ export function getEventsFromExpenses(expenses, budgets) {
   return events;
 }
 
-export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateClick, onEventClick) {
-  const events = getEventsFromExpenses(expensesRef(), budgetsRef());
+export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateClick, onEventClick, snapshotsRef) {
+  const events = getEventsFromExpenses(expensesRef(), budgetsRef(), snapshotsRef ? snapshotsRef() : {});
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     headerToolbar: {
@@ -83,10 +88,11 @@ export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateCl
       const dateKey = `${y}-${m}-${day}`;
       const expenses = expensesRef();
       const budgets = budgetsRef();
+      const snapshots = snapshotsRef ? snapshotsRef() : {};
       const items = expenses[dateKey] || [];
       if (items.length === 0) return [];
+      const daily = getDailyTargetForDate(expenses, budgets, snapshots, d);
       const total = items.reduce((s, e) => s + e.amount, 0);
-      const daily = calculateDynamicDailyBudget(expenses, budgets);
       if (daily <= 0) return [];
       if (total > daily) return ['day-over'];
       if (total >= daily * 0.9) return ['day-warning'];
@@ -97,9 +103,9 @@ export function initializeCalendar(calendarEl, expensesRef, budgetsRef, onDateCl
   return calendar;
 }
 
-export function refreshCalendar(calendar, expensesRef, budgetsRef) {
+export function refreshCalendar(calendar, expensesRef, budgetsRef, snapshotsRef) {
   if (!calendar) return;
   calendar.removeAllEvents();
-  const events = getEventsFromExpenses(expensesRef(), budgetsRef());
+  const events = getEventsFromExpenses(expensesRef(), budgetsRef(), snapshotsRef ? snapshotsRef() : {});
   calendar.addEventSource(events);
 }
