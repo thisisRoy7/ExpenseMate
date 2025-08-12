@@ -21,17 +21,17 @@ export function getEventsFromExpenses(expenses, budgets) {
     const budgetStatus = getDayBudgetStatus(expenses, budgets, dateKey);
     const dailyBudget = calculateDynamicDailyBudget(expenses, budgets);
 
-    let backgroundColor = '#28a745';
-    let borderColor = '#1e7e34';
+    let backgroundColor = '#111111';
+    let borderColor = '#111111';
     if (budgetStatus === 'over-budget') {
-      backgroundColor = '#000000';
-      borderColor = '#000000';
+      backgroundColor = '#cc0000';
+      borderColor = '#cc0000';
     } else if (budgetStatus === 'on-budget') {
-      backgroundColor = '#888888';
-      borderColor = '#888888';
+      backgroundColor = '#666666';
+      borderColor = '#666666';
     } else if (budgetStatus === 'under-budget') {
-      backgroundColor = '#FFFFFF';
-      borderColor = '#000000';
+      backgroundColor = '#e5e5e5';
+      borderColor = '#111111';
     }
 
     let title = `₹${totalAmount.toFixed(2)} (${dayExpenses.length} items)`;

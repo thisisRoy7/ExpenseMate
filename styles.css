@@ -94,7 +94,29 @@ main {
 .fc-daygrid-day { cursor: pointer; }
 .fc-daygrid-day:hover { background-color: transparent !important; }
 .fc-daygrid-day-number { color: var(--fg); }
-.fc-event { border-radius: 0 !important; color: var(--bg) !important; }
+.fc-event { border-radius: 0 !important; color: var(--fg) !important; }
+/* Ensure readable event text against backgrounds */
+.fc-event.over-budget { color: #ffffff !important; }
+.fc-event.on-budget { color: #ffffff !important; }
+.fc-event.under-budget { color: #000000 !important; }
+
+/* Stronger calendar day box coloring with theme-aware variants */
+/* Light theme */
+[data-theme="light"] .fc-daygrid-day.day-over .fc-daygrid-day-frame { background: #ffe5e5; }
+[data-theme="light"] .fc-daygrid-day.day-warning .fc-daygrid-day-frame { background: #fff7db; }
+[data-theme="light"] .fc-daygrid-day.day-under .fc-daygrid-day-frame { background: #e9f9ee; }
+[data-theme="light"] .fc-daygrid-day.day-over { outline: 2px solid #ff4d4d; }
+[data-theme="light"] .fc-daygrid-day.day-warning { outline: 2px solid #ffcc00; }
+[data-theme="light"] .fc-daygrid-day.day-under { outline: 2px solid #33b249; }
+
+/* Dark theme */
+[data-theme="dark"] .fc-daygrid-day.day-over .fc-daygrid-day-frame { background: rgba(255, 77, 77, 0.25); }
+[data-theme="dark"] .fc-daygrid-day.day-warning .fc-daygrid-day-frame { background: rgba(255, 204, 0, 0.25); }
+[data-theme="dark"] .fc-daygrid-day.day-under .fc-daygrid-day-frame { background: rgba(51, 178, 73, 0.25); }
+[data-theme="dark"] .fc-daygrid-day.day-over { outline: 2px solid rgba(255, 77, 77, 0.7); }
+[data-theme="dark"] .fc-daygrid-day.day-warning { outline: 2px solid rgba(255, 204, 0, 0.7); }
+[data-theme="dark"] .fc-daygrid-day.day-under { outline: 2px solid rgba(51, 178, 73, 0.7); }
+
 .fc-daygrid-more-link { background: var(--bg) !important; color: var(--fg) !important; border: 1px solid var(--border) !important; border-radius: 0 !important; }
 
 /* Calendar day box coloring */
